@@ -1,0 +1,45 @@
+from azure.cognitiveservices.vision.computervision import ComputerVisionClient
+from msrest.authentication import CognitiveServicesCredentials
+import os
+# Set API key.
+subscription_key = '99296887a9d54ab9a23a03955d311c60'
+
+# Set endpoint.
+endpoint = 'https://mattfirstproject.cognitiveservices.azure.com/'
+# Call API
+computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
+
+
+local_image_path = os.getcwd() + '/101.jfif'
+local_image = open(local_image_path, "rb")
+
+detect_objects_results_remote = computervision_client.detect_objects_in_stream(local_image)
+
+
+
+import cv2 
+
+image_path = "./101.jfif"
+image = cv2.imread(image_path)
+print(image)
+color = (255,0,0)
+window_name = "C101"
+thickness = 2
+
+# Print detected objects results with bounding boxes
+print("Detecting objects in remote image:")
+if len(detect_objects_results_remote.objects) == 0:
+    print("No objects detected.")
+else:
+    for o in detect_objects_results_remote.objects:
+        print(o.object_property)
+        print("object at location {}, {}, {}, {}".format( \
+        o.rectangle.x, o.rectangle.x + o.rectangle.w, \
+        o.rectangle.y, o.rectangle.y + o.rectangle.h))
+        cv2.rectangle(image,(o.rectangle.x,o.rectangle.y),(o.rectangle.x + o.rectangle.w,o.rectangle.y + o.rectangle.h),color,thickness)
+        
+        
+cv2.imshow(window_name, image)
+cv2.imwrite('output.jpg', image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
