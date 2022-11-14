@@ -1,0 +1,54 @@
+from azure.cognitiveservices.vision.computervision import ComputerVisionClient
+from msrest.authentication import CognitiveServicesCredentials
+import os
+import numpy as np
+
+
+# Set API key.
+subscription_key = '99296887a9d54ab9a23a03955d311c60'
+
+# Set endpoint.
+endpoint = 'https://mattfirstproject.cognitiveservices.azure.com/'
+# Call API
+computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
+
+local_image_path = os.getcwd() + '/p1.jpg'
+
+
+# 讀取圖片
+local_image = open(local_image_path, "rb")
+
+detect_objects_results_remote = computervision_client.detect_objects_in_stream(local_image)
+
+import cv2
+
+img_path ='./p1.jpg'
+image = cv2.imread(img_path) 
+
+window_name = 'Image'
+
+color = (255, 0, 0) 
+
+thickness = 2
+
+
+
+# Print detected objects results with bounding boxes
+print("Detecting objects in remote image:")
+if len(detect_objects_results_remote.objects) == 0:
+    print("No objects detected.")
+else:
+    for o in detect_objects_results_remote.objects:
+        print('object: {}, confident: {}'.format(o.object_property, o.confidence))
+        print("object at location (x, x+w, y, y+h): {}, {}, {}, {}".format( \
+        o.rectangle.x, o.rectangle.x + o.rectangle.w, \
+        o.rectangle.y, o.rectangle.y + o.rectangle.h))
+        cv2.rectangle(image, (o.rectangle.x, o.rectangle.y), (o.rectangle.x+ o.rectangle.w, o.rectangle.y+ o.rectangle.h), color, thickness)    
+        cv2.putText(image, o.object_property, (o.rectangle.x -20, o.rectangle.y -20), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 1, cv2.LINE_AA)
+        print('====================')
+
+
+cv2.imshow(window_name, image)
+cv2.imwrite('output.jpg', image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
